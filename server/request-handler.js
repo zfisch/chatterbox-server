@@ -42,15 +42,15 @@ exports.requestHandler = function(request, response) {
 
     var statusCode;
 
-    if(request.method === "GET"){
+    if(request.method === "GET" && request.url.slice(0, 9) === "/classes/"){
       statusCode = 200;
     }
-    else if (request.method === "POST") {
+    else if (request.method === "POST" && request.url.slice(0, 9) === "/classes/") {
       messages.push(JSON.parse(resultString));
       statusCode = 201;
     }
     else {
-      statusCode = 202;
+      statusCode = 404;
     }
 
     var headers = defaultCorsHeaders;
