@@ -30,36 +30,53 @@ exports.requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
 
+
   console.log("Serving request type " + request.method + " for url " + request.url);
 
-  var resultString = '';
+  //declare obj with all valid request methods as keys
+  var validReqs = {
+    'GET': 'get',
+    'POST': 'post',
+    'OPTIONS': 'options'
+  };
 
-  request.on("data",function(data) {
-    resultString += data;
-  });
+  var statusCode = 200;
 
-  request.on("end", function() {
+  //if the current request method is NOT in onj, 404
+  if (validReqs[request.method]){
 
-    var statusCode;
+    var resultString = '';
 
-    if(request.method === "GET" && request.url.slice(0, 9) === "/classes/"){
-      statusCode = 200;
-    }
-    else if (request.method === "POST" && request.url.slice(0, 9) === "/classes/") {
-      messages.push(JSON.parse(resultString));
-      statusCode = 201;
-    }
-    else {
-      statusCode = 404;
-    }
+    request.on("data",function(data) {
+      resultString += data;
+    });
 
-    var headers = defaultCorsHeaders;
-    headers['Content-Type'] = "text/plain";
-    response.writeHead(statusCode, headers);
+    request.on("end", function() {
+      if(request.method === "GET" && request.url.slice(0, 9) === "/classes/"){
+        statusCode = 200;
+      }
+      else if (request.method === "POST" && request.url.slice(0, 9) === "/classes/") {
+        var message = JSON.parse(resultString);
+        message['objectId'] = messages.length;
+        messages.push(message);
+        statusCode = 201;
+      }
+      else if (request.method === "OPTIONS" && request.url.slice(0, 9) === "/classes/"){
+        statusCode = 200;
+      }
+      else {
+        statusCode = 404;
+      }
+    });
+  }
 
-    var result = {"results": messages};
-    response.end(JSON.stringify(result));
-  });
+
+  var headers = defaultCorsHeaders;
+  headers["Content-Type"] = "text/plain";
+  response.writeHead(statusCode, headers);
+
+  var result = {"results": messages};
+  response.end(JSON.stringify(result));
 };
 
 
