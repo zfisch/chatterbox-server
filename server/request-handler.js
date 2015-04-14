@@ -1,5 +1,3 @@
-var fs = require('fs');
-
 /*************************************************************
 
 You should implement your request handler function in this file.
@@ -16,7 +14,6 @@ this file and include it in basic-server.js so that it actually works.
 
 var messages = [];
 
-
 exports.requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -32,52 +29,49 @@ exports.requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
+
   console.log("Serving request type " + request.method + " for url " + request.url);
-  console.log("request:", request._postData);
-  // The outgoing status.
 
-  // fs.readFile('./classes/room1/messages.json', function (err, data) {
-    // var json = JSON.parse(data);
-    // console.log("json: ", json);
-    // json.messages.push(msg);
-    // console.log("json: ", json);
+  var resultString = '';
 
+  request.on("data",function(data) {
+    resultString += data;
+  });
 
-  // if (err) return callback(err); // file reading error
-  // try {
-  //   // parse and return json to callback
-  //   var json = JSON.parse(data);
-  //   callback(null, json);
-  // } catch (ex) {
-  //   // catch JSON parsing errors so your app doesn't crash
-  //   callback(ex);
-  // }
-  // });
+  request.on("end", function() {
 
-  var statusCode;
-  if(request.method === "GET"){
-    statusCode = 200;
-  }
-  else if (request.method === "POST") {
-    messages.push(request._postData);
-    statusCode = 201;
-  }
-  else {
-    statusCode = 202;
-  }
+    var statusCode;
+
+    if(request.method === "GET"){
+      statusCode = 200;
+    }
+    else if (request.method === "POST") {
+      messages.push(JSON.parse(resultString));
+      statusCode = 201;
+    }
+    else {
+      statusCode = 202;
+    }
+
+    var headers = defaultCorsHeaders;
+    headers['Content-Type'] = "text/plain";
+    response.writeHead(statusCode, headers);
+
+    var result = {"results": messages};
+    response.end(JSON.stringify(result));
+  });
+};
+
 
   // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
 
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = "application/json";
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -86,9 +80,6 @@ exports.requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  var result = {results: messages};
-  response.end(JSON.stringify(result));
-};
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
