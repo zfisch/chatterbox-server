@@ -1,3 +1,5 @@
+var fs = require('fs');
+
 /*************************************************************
 
 You should implement your request handler function in this file.
@@ -11,6 +13,9 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+
+var messages = [];
+
 
 exports.requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -28,15 +33,37 @@ exports.requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
-
+  console.log("request:", request._postData);
   // The outgoing status.
-  var statusCode;
 
+  // fs.readFile('./classes/room1/messages.json', function (err, data) {
+    // var json = JSON.parse(data);
+    // console.log("json: ", json);
+    // json.messages.push(msg);
+    // console.log("json: ", json);
+
+
+  // if (err) return callback(err); // file reading error
+  // try {
+  //   // parse and return json to callback
+  //   var json = JSON.parse(data);
+  //   callback(null, json);
+  // } catch (ex) {
+  //   // catch JSON parsing errors so your app doesn't crash
+  //   callback(ex);
+  // }
+  // });
+
+  var statusCode;
   if(request.method === "GET"){
     statusCode = 200;
   }
-  else {
+  else if (request.method === "POST") {
+    messages.push(request._postData);
     statusCode = 201;
+  }
+  else {
+    statusCode = 202;
   }
 
   // See the note below about CORS headers.
@@ -59,7 +86,7 @@ exports.requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  var result = {results: []};
+  var result = {results: messages};
   response.end(JSON.stringify(result));
 };
 
