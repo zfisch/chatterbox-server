@@ -33,7 +33,6 @@ exports.requestHandler = function(request, response) {
 
   console.log("Serving request type " + request.method + " for url " + request.url);
 
-  //declare obj with all valid request methods as keys
   var validReqs = {
     'GET': 'get',
     'POST': 'post',
@@ -42,7 +41,6 @@ exports.requestHandler = function(request, response) {
 
   var statusCode = 200;
 
-  //if the current request method is NOT in onj, 404
   if (validReqs[request.method]){
 
     var resultString = '';
@@ -57,7 +55,6 @@ exports.requestHandler = function(request, response) {
       }
       else if (request.method === "POST" && request.url.slice(0, 9) === "/classes/") {
         var message = JSON.parse(resultString);
-        message['objectId'] = messages.length;
         messages.push(message);
         statusCode = 201;
       }
@@ -67,16 +64,16 @@ exports.requestHandler = function(request, response) {
       else {
         statusCode = 404;
       }
+
+      var headers = defaultCorsHeaders;
+      headers["Content-Type"] = "text/plain";
+      response.writeHead(statusCode, headers);
+
+      var result = {"results": messages};
+      response.end(JSON.stringify(result));
     });
   }
 
-
-  var headers = defaultCorsHeaders;
-  headers["Content-Type"] = "text/plain";
-  response.writeHead(statusCode, headers);
-
-  var result = {"results": messages};
-  response.end(JSON.stringify(result));
 };
 
 
